@@ -73,13 +73,13 @@ impl Joy2mouse {
 
             EV_ABS => {
                 let distance = if value.abs() < 16 { 0 } else { value >> 12 };
-                // reverse scroll direction and decrease sensitivity
-                let scroll_distance = -distance >> 1;
+                // decrease sensitivity
+                let scroll_distance = distance >> 1;
                 match code {
                     ABS_X => self.cursor_move_distance_x = distance,
                     ABS_Y => self.cursor_move_distance_y = distance,
                     ABS_RX => self.wheel_scroll_distance_x = scroll_distance,
-                    ABS_RY => self.wheel_scroll_distance_y = scroll_distance,
+                    ABS_RY => self.wheel_scroll_distance_y = -scroll_distance, // natural scroll
                     ABS_Z => {}
                     ABS_RZ => {}
                     ABS_HAT0X => {
