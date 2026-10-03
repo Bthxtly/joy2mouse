@@ -1,19 +1,26 @@
+use crate::config::Config;
+use crate::constants::*;
 use evdev::{EventType, InputEvent, RelativeAxisCode};
-
-mod constants;
-use constants::*;
 
 #[derive(Default, Debug)]
 pub struct Joy2mouse {
+    config: Config,
     cursor_move_distance_x: i32,
     cursor_move_distance_y: i32,
     wheel_scroll_distance_x: i32,
     wheel_scroll_distance_y: i32,
-    hat0x_key: u16,
-    hat0y_key: u16,
+    hat0x_key: Option<u16>,
+    hat0y_key: Option<u16>,
 }
 
 impl Joy2mouse {
+    pub fn new(config: Config) -> Self {
+        Self {
+            config,
+            ..Default::default()
+        }
+    }
+
     pub fn yield_movement_event(&self) -> (InputEvent, InputEvent) {
         (
             InputEvent::new_now(
@@ -51,21 +58,23 @@ impl Joy2mouse {
         let code = joy_event.code();
         let value = joy_event.value();
 
+        let buttons = &self.config.buttons;
+
         // evdev uses its own enumerator
         match event_type.0 {
             EV_KEY => {
                 let key = match code {
-                    BTN_SOUTH => Some(KEY_SPACE),
-                    BTN_EAST => Some(KEY_NEXTSONG),
-                    BTN_NORTH => Some(KEY_PREVIOUSSONG),
-                    BTN_WEST => Some(KEY_PLAYPAUSE),
-                    BTN_TL => Some(MOUSE_LEFT),
-                    BTN_TR => Some(MOUSE_RIGHT),
-                    BTN_SELECT => Some(KEY_LEFT_META),
-                    BTN_START => None,
-                    BTN_MODE => None,
-                    BTN_THUMBL => None,
-                    BTN_THUMBR => Some(MOUSE_MIDDLE),
+                    BTN_SOUTH => buttons.btn_south,
+                    BTN_EAST => buttons.btn_east,
+                    BTN_NORTH => buttons.btn_north,
+                    BTN_WEST => buttons.btn_west,
+                    BTN_TL => buttons.btn_tl,
+                    BTN_TR => buttons.btn_tr,
+                    BTN_SELECT => buttons.btn_select,
+                    BTN_START => buttons.btn_start,
+                    BTN_MODE => buttons.btn_mode,
+                    BTN_THUMBL => buttons.btn_thumbl,
+                    BTN_THUMBR => buttons.btn_thumbr,
                     _ => None,
                 };
                 click_event = key.map(|key| InputEvent::new_now(EV_KEY, key, value));
@@ -81,23 +90,35 @@ impl Joy2mouse {
                     ABS_Y => self.cursor_move_distance_y = distance,
                     ABS_RX => self.wheel_scroll_distance_x = scroll_distance,
                     ABS_RY => self.wheel_scroll_distance_y = -scroll_distance, // natural scroll
-                    ABS_Z => click_event = Some(InputEvent::new_now(EV_KEY, KEY_LEFTSHIFT, on)),
-                    ABS_RZ => click_event = Some(InputEvent::new_now(EV_KEY, KEY_LEFTALT, on)),
+                    ABS_Z => {
+                        click_event = buttons
+                            .abs_z
+                            .map(|key| InputEvent::new_now(EV_KEY, key, on))
+                    }
+                    ABS_RZ => {
+                        click_event = buttons
+                            .abs_rz
+                            .map(|key| InputEvent::new_now(EV_KEY, key, on))
+                    }
                     ABS_HAT0X => {
                         match value {
-                            -1 => self.hat0x_key = KEY_LEFT,
-                            1 => self.hat0x_key = KEY_RIGHT,
+                            -1 => self.hat0x_key = buttons.hat0_left,
+                            1 => self.hat0x_key = buttons.hat0_right,
                             _ => {}
                         }
-                        click_event = Some(InputEvent::new_now(EV_KEY, self.hat0x_key, value.abs()))
+                        click_event = self
+                            .hat0x_key
+                            .map(|key| InputEvent::new_now(EV_KEY, key, value.abs()))
                     }
                     ABS_HAT0Y => {
                         match value {
-                            -1 => self.hat0y_key = KEY_UP,
-                            1 => self.hat0y_key = KEY_DOWN,
+                            -1 => self.hat0y_key = buttons.hat0_up,
+                            1 => self.hat0y_key = buttons.hat0_down,
                             _ => {}
                         }
-                        click_event = Some(InputEvent::new_now(EV_KEY, self.hat0y_key, value.abs()))
+                        click_event = self
+                            .hat0y_key
+                            .map(|key| InputEvent::new_now(EV_KEY, key, value.abs()))
                     }
                     _ => unreachable!("gamepads don't generate this code: {code}"),
                 };

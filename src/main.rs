@@ -9,7 +9,11 @@ use std::{
 
 use evdev::{AttributeSet, KeyCode, RelativeAxisCode, uinput::VirtualDevice};
 
+mod config;
+mod constants;
 mod translate_event;
+
+use config::Config;
 use translate_event::*;
 
 pub fn pick_device() -> evdev::Device {
@@ -29,28 +33,12 @@ pub fn pick_device() -> evdev::Device {
     }
 }
 
-fn build_device(name: &str) -> std::io::Result<VirtualDevice> {
+fn build_device(name: &str, config: &Config) -> std::io::Result<VirtualDevice> {
     VirtualDevice::builder()?
         .name(name)
-        .with_keys(&AttributeSet::from_iter([
-            KeyCode::BTN_LEFT,
-            KeyCode::BTN_RIGHT,
-            KeyCode::BTN_MIDDLE,
-            KeyCode::BTN_SIDE,
-            KeyCode::BTN_EXTRA,
-            KeyCode::KEY_LEFT,
-            KeyCode::KEY_RIGHT,
-            KeyCode::KEY_UP,
-            KeyCode::KEY_DOWN,
-            KeyCode::KEY_SPACE,
-            KeyCode::KEY_LEFTMETA,
-            KeyCode::KEY_LEFTCTRL,
-            KeyCode::KEY_LEFTSHIFT,
-            KeyCode::KEY_LEFTALT,
-            KeyCode::KEY_NEXTSONG,
-            KeyCode::KEY_PLAYPAUSE,
-            KeyCode::KEY_PREVIOUSSONG,
-        ]))?
+        .with_keys(&AttributeSet::from_iter(
+            config.keys().iter().map(|key| KeyCode(*key)),
+        ))?
         .with_relative_axes(&AttributeSet::from_iter([
             RelativeAxisCode::REL_X,
             RelativeAxisCode::REL_Y,
@@ -61,16 +49,16 @@ fn build_device(name: &str) -> std::io::Result<VirtualDevice> {
 }
 
 fn main() -> std::io::Result<()> {
+    let config = Config::new("assets/config.toml");
     let mut d = pick_device();
-    let mut device = build_device("virtual mouse")?;
+    let mut device = build_device("virtual mouse", &config)?;
+    let mut joy2mouse = Joy2mouse::new(config);
     for path in device.enumerate_dev_nodes_blocking()? {
         println!("Available as {}", path?.display());
     }
 
-    let mut joy2mouse = Joy2mouse::default();
-    let (tx, rx) = mpsc::channel();
-
     // Read gamepad events in concurrency
+    let (tx, rx) = mpsc::channel();
     thread::spawn(move || {
         loop {
             match d.fetch_events() {

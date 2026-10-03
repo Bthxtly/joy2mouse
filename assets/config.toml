@@ -1,0 +1,15 @@
+[buttons]
+btn_south = 57   # space
+btn_east = 163   # next song
+btn_north = 165  # previous song
+btn_west = 164   # play/pause
+btn_select = 125 # meta
+btn_tl = 272     # mouse left
+btn_tr = 273     # mouse right
+btn_thumbr = 274 # mouse middle
+abs_z = 42       # shift
+abs_rz = 56      # alt
+hat0_left = 105  # left
+hat0_right = 106 # right
+hat0_up = 103    # up
+hat0_down = 108  # down

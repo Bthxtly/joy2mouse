@@ -28,26 +28,3 @@ pub const ABS_Z: u16 = 2;
 pub const ABS_RZ: u16 = 5;
 pub const ABS_HAT0X: u16 = 16;
 pub const ABS_HAT0Y: u16 = 17;
-
-// mouse buttons
-pub const MOUSE_LEFT: u16 = 272;
-pub const MOUSE_RIGHT: u16 = 273;
-pub const MOUSE_MIDDLE: u16 = 274;
-#[allow(dead_code)]
-pub const MOUSE_SIDE: u16 = 275;
-#[allow(dead_code)]
-pub const MOUSE_EXTRA: u16 = 276;
-
-// keyboard keys
-pub const KEY_UP: u16 = 103;
-pub const KEY_LEFT: u16 = 105;
-pub const KEY_RIGHT: u16 = 106;
-pub const KEY_DOWN: u16 = 108;
-pub const KEY_SPACE: u16 = 57;
-pub const KEY_LEFTCTRL: u16 = 29;
-pub const KEY_LEFTSHIFT: u16 = 42;
-pub const KEY_LEFTALT: u16 = 56;
-pub const KEY_LEFT_META: u16 = 125;
-pub const KEY_NEXTSONG: u16 = 163;
-pub const KEY_PLAYPAUSE: u16 = 164;
-pub const KEY_PREVIOUSSONG: u16 = 165;
