@@ -1,4 +1,8 @@
+[misc]
+device_name = "x-box"
+
 [buttons]
+# codes can be found at /usr/include/linux/input-event-codes.h
 btn_south = 57   # space
 btn_east = 163   # next song
 btn_north = 165  # previous song

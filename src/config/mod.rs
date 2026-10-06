@@ -1,11 +1,18 @@
 use serde::Deserialize;
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize, Clone)]
 pub struct Config {
+    pub misc: Misc,
     pub buttons: Buttons,
 }
 
-#[derive(Default, Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize, Clone)]
+pub struct Misc {
+    pub device_name: String,
+    pub virtual_divece_name: Option<String>,
+}
+
+#[derive(Default, Debug, Deserialize, Clone)]
 pub struct Buttons {
     pub btn_south: Option<u16>,
     pub btn_east: Option<u16>,
