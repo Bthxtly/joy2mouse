@@ -55,10 +55,10 @@ impl Joy2mouse {
         match event_type.0 {
             EV_KEY => {
                 let key = match code {
-                    BTN_SOUTH => None,
-                    BTN_EAST => None,
-                    BTN_NORTH => None,
-                    BTN_WEST => None,
+                    BTN_SOUTH => Some(KEY_SPACE),
+                    BTN_EAST => Some(KEY_NEXTSONG),
+                    BTN_NORTH => Some(KEY_PREVIOUSSONG),
+                    BTN_WEST => Some(KEY_PLAYPAUSE),
                     BTN_TL => Some(MOUSE_LEFT),
                     BTN_TR => Some(MOUSE_RIGHT),
                     BTN_SELECT => Some(KEY_LEFT_META),
@@ -72,6 +72,7 @@ impl Joy2mouse {
             }
 
             EV_ABS => {
+                let on = value.clamp(0, 1);
                 let distance = if value.abs() < 16 { 0 } else { value >> 12 };
                 // decrease sensitivity
                 let scroll_distance = distance >> 1;
@@ -80,8 +81,8 @@ impl Joy2mouse {
                     ABS_Y => self.cursor_move_distance_y = distance,
                     ABS_RX => self.wheel_scroll_distance_x = scroll_distance,
                     ABS_RY => self.wheel_scroll_distance_y = -scroll_distance, // natural scroll
-                    ABS_Z => {}
-                    ABS_RZ => {}
+                    ABS_Z => click_event = Some(InputEvent::new_now(EV_KEY, KEY_LEFTSHIFT, on)),
+                    ABS_RZ => click_event = Some(InputEvent::new_now(EV_KEY, KEY_LEFTALT, on)),
                     ABS_HAT0X => {
                         match value {
                             -1 => self.hat0x_key = KEY_LEFT,

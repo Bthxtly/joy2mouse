@@ -42,7 +42,14 @@ fn build_device(name: &str) -> std::io::Result<VirtualDevice> {
             KeyCode::KEY_RIGHT,
             KeyCode::KEY_UP,
             KeyCode::KEY_DOWN,
+            KeyCode::KEY_SPACE,
             KeyCode::KEY_LEFTMETA,
+            KeyCode::KEY_LEFTCTRL,
+            KeyCode::KEY_LEFTSHIFT,
+            KeyCode::KEY_LEFTALT,
+            KeyCode::KEY_NEXTSONG,
+            KeyCode::KEY_PLAYPAUSE,
+            KeyCode::KEY_PREVIOUSSONG,
         ]))?
         .with_relative_axes(&AttributeSet::from_iter([
             RelativeAxisCode::REL_X,
