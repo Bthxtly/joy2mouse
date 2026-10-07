@@ -17,3 +17,11 @@ hat0_left = 105  # left
 hat0_right = 106 # right
 hat0_up = 103    # up
 hat0_down = 108  # down
+
+[cursor]
+dead_zone = 16
+_sensitivity = 0
+
+[wheel]
+x_reverse = false
+y_reverse = true

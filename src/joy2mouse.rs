@@ -1,5 +1,4 @@
-use crate::config::Config;
-use crate::constants::*;
+use crate::{config::Config, constants::*};
 use evdev::{EventType, InputEvent, RelativeAxisCode};
 
 #[derive(Default, Debug)]
@@ -79,17 +78,27 @@ impl Joy2mouse {
                 };
                 click_event = key.map(|key| InputEvent::new_now(EV_KEY, key, value));
             }
-
             EV_ABS => {
-                let on = value.clamp(0, 1);
-                let distance = if value.abs() < 16 { 0 } else { value >> 12 };
-                // decrease sensitivity
+                let distance = if value.abs() < self.config.cursor.dead_zone {
+                    0
+                } else {
+                    value >> 12
+                };
+                // decrease scrollment sensitivity
                 let scroll_distance = distance >> 1;
+
+                // reverse vertical and horizontal scrollment respectively
+                let xr = if self.config.wheel.x_reverse { -1 } else { 1 };
+                let yr = if self.config.wheel.y_reverse { -1 } else { 1 };
+
+                // whether shoulders are pressed or not
+                let on = value.clamp(0, 1);
+
                 match code {
                     ABS_X => self.cursor_move_distance_x = distance,
                     ABS_Y => self.cursor_move_distance_y = distance,
-                    ABS_RX => self.wheel_scroll_distance_x = scroll_distance,
-                    ABS_RY => self.wheel_scroll_distance_y = -scroll_distance, // natural scroll
+                    ABS_RX => self.wheel_scroll_distance_x = scroll_distance * xr,
+                    ABS_RY => self.wheel_scroll_distance_y = scroll_distance * yr,
                     ABS_Z => {
                         click_event = buttons
                             .abs_z

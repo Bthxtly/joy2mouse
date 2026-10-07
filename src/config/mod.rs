@@ -4,6 +4,8 @@ use serde::Deserialize;
 pub struct Config {
     pub misc: Misc,
     pub buttons: Buttons,
+    pub cursor: Cursor,
+    pub wheel: Wheel,
 }
 
 #[derive(Default, Debug, Deserialize, Clone)]
@@ -31,6 +33,18 @@ pub struct Buttons {
     pub hat0_right: Option<u16>,
     pub hat0_up: Option<u16>,
     pub hat0_down: Option<u16>,
+}
+
+#[derive(Default, Debug, Deserialize, Clone)]
+pub struct Cursor {
+    pub dead_zone: i32,
+    pub _sensitivity: i32,
+}
+
+#[derive(Default, Debug, Deserialize, Clone)]
+pub struct Wheel {
+    pub x_reverse: bool,
+    pub y_reverse: bool,
 }
 
 impl Config {
