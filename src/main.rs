@@ -95,21 +95,23 @@ fn main() -> Result<()> {
                         if !joy2mouse.on() {
                             break;
                         }
-                        dbg!(&click);
                         device.emit(&[click])?;
                     }
                 }
 
                 if !joy2mouse.on() {
+                    sleep(Duration::from_millis(500));
                     continue;
                 }
 
-                let events = joy2mouse.yield_movement_event();
-                device.emit(&[events.0, events.1])?;
+                if let Some(events) = joy2mouse.yield_cursor_events() {
+                    device.emit(&[events.0, events.1])?;
+                }
 
                 // decrease scroll sensitivity by emitting scroll events less
-                if should_scrool == 0 {
-                    let events = joy2mouse.yield_scroll_movement();
+                if should_scrool == 0
+                    && let Some(events) = joy2mouse.yield_wheel_events()
+                {
                     device.emit(&[events.0, events.1])?;
                 }
                 should_scrool = (should_scrool + 1) % 15;

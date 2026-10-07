@@ -28,34 +28,44 @@ impl Joy2mouse {
         self.on
     }
 
-    pub fn yield_movement_event(&self) -> (InputEvent, InputEvent) {
-        (
-            InputEvent::new_now(
-                EventType::RELATIVE.0,
-                RelativeAxisCode::REL_X.0,
-                self.cursor_move_distance_x,
-            ),
-            InputEvent::new_now(
-                EventType::RELATIVE.0,
-                RelativeAxisCode::REL_Y.0,
-                self.cursor_move_distance_y,
-            ),
-        )
+    /// return cursor movement event only when there is any
+    pub fn yield_cursor_events(&self) -> Option<(InputEvent, InputEvent)> {
+        if self.cursor_move_distance_x == 0 && self.cursor_move_distance_x == 0 {
+            None
+        } else {
+            Some((
+                InputEvent::new_now(
+                    EventType::RELATIVE.0,
+                    RelativeAxisCode::REL_X.0,
+                    self.cursor_move_distance_x,
+                ),
+                InputEvent::new_now(
+                    EventType::RELATIVE.0,
+                    RelativeAxisCode::REL_Y.0,
+                    self.cursor_move_distance_y,
+                ),
+            ))
+        }
     }
 
-    pub fn yield_scroll_movement(&self) -> (InputEvent, InputEvent) {
-        (
-            InputEvent::new_now(
-                EventType::RELATIVE.0,
-                RelativeAxisCode::REL_HWHEEL.0,
-                self.wheel_scroll_distance_x,
-            ),
-            InputEvent::new_now(
-                EventType::RELATIVE.0,
-                RelativeAxisCode::REL_WHEEL.0,
-                self.wheel_scroll_distance_y,
-            ),
-        )
+    /// return wheel scrollment event only when there is any
+    pub fn yield_wheel_events(&self) -> Option<(InputEvent, InputEvent)> {
+        if self.wheel_scroll_distance_x == 0 && self.wheel_scroll_distance_y == 0 {
+            None
+        } else {
+            Some((
+                InputEvent::new_now(
+                    EventType::RELATIVE.0,
+                    RelativeAxisCode::REL_HWHEEL.0,
+                    self.wheel_scroll_distance_x,
+                ),
+                InputEvent::new_now(
+                    EventType::RELATIVE.0,
+                    RelativeAxisCode::REL_WHEEL.0,
+                    self.wheel_scroll_distance_y,
+                ),
+            ))
+        }
     }
 
     pub fn translate_joy_event(&mut self, joy_event: InputEvent) -> Option<InputEvent> {
@@ -153,7 +163,9 @@ impl Joy2mouse {
                     _ => unreachable!("gamepads don't generate this code: {code}"),
                 };
             }
-            EV_FF => todo!(),
+            EV_FF => {
+                dbg!(code, value);
+            }
             EV_SYN => { /* ignore */ }
             _ => unreachable!("gamepads don't generate this event: {event_type:?}"),
         }
