@@ -4,6 +4,8 @@ use evdev::{EventType, InputEvent, RelativeAxisCode};
 #[derive(Default, Debug)]
 pub struct Joy2mouse {
     config: Config,
+    on: bool,
+    toggle_keys_ispressed: Vec<bool>,
     cursor_move_distance_x: i32,
     cursor_move_distance_y: i32,
     wheel_scroll_distance_x: i32,
@@ -15,9 +17,15 @@ pub struct Joy2mouse {
 impl Joy2mouse {
     pub fn new(config: Config) -> Self {
         Self {
-            config,
+            config: config.clone(),
+            on: true,
+            toggle_keys_ispressed: vec![false; config.misc.toggle_keys.len()],
             ..Default::default()
         }
+    }
+
+    pub fn on(&self) -> bool {
+        self.on
     }
 
     pub fn yield_movement_event(&self) -> (InputEvent, InputEvent) {
@@ -51,15 +59,28 @@ impl Joy2mouse {
     }
 
     pub fn translate_joy_event(&mut self, joy_event: InputEvent) -> Option<InputEvent> {
-        let mut click_event = None;
-
         let event_type = &joy_event.event_type();
         let code = joy_event.code();
         let value = joy_event.value();
 
-        let buttons = &self.config.buttons;
+        // if all keys in Config.misc.toggle_keys are pressed, then toggle self
+        for (i, key) in self.config.misc.toggle_keys.iter().enumerate() {
+            if *key == code {
+                self.toggle_keys_ispressed[i] = value != 0;
+            }
+            if self.toggle_keys_ispressed.iter().all(|t| *t) {
+                self.on = !self.on;
+                self.toggle_keys_ispressed
+                    .iter_mut()
+                    .for_each(|t| *t = false);
+            }
+        }
+        if !self.on() {
+            return None;
+        }
 
-        // evdev uses its own enumerator
+        let mut click_event = None;
+        let buttons = &self.config.buttons;
         match event_type.0 {
             EV_KEY => {
                 let key = match code {

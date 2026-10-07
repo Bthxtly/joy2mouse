@@ -92,9 +92,16 @@ fn main() -> Result<()> {
 
                 while let Ok(joy_event) = rx.try_recv() {
                     if let Some(click) = joy2mouse.translate_joy_event(joy_event) {
+                        if !joy2mouse.on() {
+                            break;
+                        }
                         dbg!(&click);
                         device.emit(&[click])?;
                     }
+                }
+
+                if !joy2mouse.on() {
+                    continue;
                 }
 
                 let events = joy2mouse.yield_movement_event();

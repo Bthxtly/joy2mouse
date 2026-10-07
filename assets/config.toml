@@ -1,5 +1,6 @@
 [misc]
 device_name = "x-box"
+toggle_keys = [315, 317] # BTN_START and BTN_THUMBL
 
 [buttons]
 # codes can be found at /usr/include/linux/input-event-codes.h

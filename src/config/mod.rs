@@ -12,6 +12,7 @@ pub struct Config {
 pub struct Misc {
     pub device_name: String,
     pub virtual_divece_name: Option<String>,
+    pub toggle_keys: Vec<u16>,
 }
 
 #[derive(Default, Debug, Deserialize, Clone)]
