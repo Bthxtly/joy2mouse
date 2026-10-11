@@ -1,4 +1,6 @@
+use directories::ProjectDirs;
 use serde::Deserialize;
+use std::path::PathBuf;
 
 #[derive(Default, Debug, Deserialize, Clone)]
 pub struct Config {
@@ -8,10 +10,11 @@ pub struct Config {
     pub wheel: Wheel,
 }
 
-#[derive(Default, Debug, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
+#[serde(default)]
 pub struct Misc {
     pub device_name: String,
-    pub virtual_divece_name: Option<String>,
+    pub virtual_divece_name: String,
     pub toggle_keys: Vec<u16>,
 }
 
@@ -49,11 +52,26 @@ pub struct Wheel {
 }
 
 impl Config {
-    pub fn new(path: &str) -> Self {
-        let content =
-            std::fs::read_to_string(path).unwrap_or_else(|e| panic!("Failed to read {path}: {e}"));
+    pub fn load_config() -> Self {
+        let Some(path) = Self::config_path() else {
+            eprintln!("TODO");
+            return Self::default();
+        };
 
-        toml::from_str(&content).unwrap_or_else(|e| panic!("Failed to parse {path}: {e}"))
+        if !path.exists() {
+            eprintln!("Can not find configure file, using default settings.");
+            return Self::default();
+        }
+
+        eprintln!("Reading configure file: {}", path.display());
+        let content =
+            std::fs::read_to_string(&path).unwrap_or_else(|e| panic!("Fail to read config: {}", e));
+
+        toml::from_str(&content).unwrap_or_else(|e| panic!("Fail to convert toml: {}", e.message()))
+    }
+
+    fn config_path() -> Option<PathBuf> {
+        ProjectDirs::from("", "", "joy2mouse").map(|dirs| dirs.config_dir().join("config.toml"))
     }
 
     pub fn keys(&self) -> Vec<u16> {
@@ -80,5 +98,15 @@ impl Config {
         .flatten()
         .copied()
         .collect()
+    }
+}
+
+impl Default for Misc {
+    fn default() -> Self {
+        Self {
+            device_name: "gamepad".to_string(),
+            virtual_divece_name: "virtual mouse".to_string(),
+            toggle_keys: Vec::default(),
+        }
     }
 }

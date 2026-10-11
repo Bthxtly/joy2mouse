@@ -33,13 +33,7 @@ fn pick_device(config: &Config) -> Result<Device> {
 
 fn build_device(config: &Config) -> Result<VirtualDevice> {
     VirtualDevice::builder()?
-        .name(
-            &config
-                .misc
-                .virtual_divece_name
-                .clone()
-                .unwrap_or("virtual mouse".to_string()),
-        )
+        .name(&config.misc.virtual_divece_name)
         .with_keys(&AttributeSet::from_iter(
             config.keys().iter().map(|key| KeyCode(*key)),
         ))?
@@ -53,7 +47,7 @@ fn build_device(config: &Config) -> Result<VirtualDevice> {
 }
 
 fn main() -> Result<()> {
-    let config = Config::new("assets/config.toml");
+    let config = Config::load_config();
     let mut device = build_device(&config)?;
     let mut joy2mouse = Joy2mouse::new(config.clone());
 
